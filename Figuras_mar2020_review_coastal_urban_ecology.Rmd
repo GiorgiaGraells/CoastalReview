@@ -1,0 +1,243 @@
+---
+title: "Figuras finales review coastal urban ecology"
+author: "G.Graells"
+date: "marzo 2020"
+output: word_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment = FALSE, warning = FALSE, message = FALSE)
+
+library(ggplot2)
+library(forcats)
+library(gtable)
+library(grid)
+library(gridExtra)
+library(tidyverse)
+library(ggpubr)
+library(choroplethr)
+library(shades)
+library(extrafont)
+library(ggraph)
+library(tidygraph)
+library(igraph)
+library(Matrix)
+library(RColorBrewer)
+library(bibliometrix)
+library(readr)
+```
+
+```{r}
+library(tidyverse)
+
+
+#Articulos_final <- read_delim("G:/Mi unidad/Documentos Yoryi/Documents yoryi/Doctorado Tesis/Review Urban ecology/Coastal urban ecology review/Articulos_final.csv", ";", escape_double = FALSE, trim_ws = TRUE) %>% mutate(paradigm= fct_relevel(paradigm, "in", "of", "for"))
+Articulos_final <- read_csv("Articulos_al2020.csv")
+
+```
+
+
+
+```{r, echo=FALSE, fig.cap="Fig 1. Decision tree of articles selected for coastal urban ecology in literature" }
+library(knitr)
+include_graphics("/home/giorgia/Documents/Doctorado tesis/Review Urban ecology/Decision tree formato FEEmarzo2020.png")
+```
+
+```{r, echo=FALSE, fig.cap= "Fig 2. World population. Growth rate from each country during year 2018. Number of articles published in coastal urban ecology by country around the world."}
+#include_graphics("/home/giorgia/Documents/Doctorado tesis/Review Urban ecology/Coastal urban ecology review/mapas inicial oct 19.png")
+
+```
+
+
+
+
+
+```{r, echo=FALSE, fig.cap= "Fig 3. Number of articles for five types of urban centers classification in the world, where research in coastal urban ecology was made."}
+
+library(ggplot2)
+library(dplyr)
+
+Forgraph<-Articulos_final %>% mutate(city_categ=case_when(city_size <100000~"Non-urban areas", city_size >=100000 & city_size <500000~"Small cities", city_size >=500000 & city_size <1000000~"Medium cities" , city_size >=1000000 & city_size <5000000~"Large cities" , city_size >=5000000 & city_size <10000000~"Very large cities" , city_size >=10000000~"Megacities"  )) %>% mutate(city_categ=fct_relevel(city_categ, "Towns", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" )) %>% filter(!is.na(city_categ))
+
+
+ggplot(Forgraph, aes(city_categ)) + geom_bar() +labs(x="City population", y="Number of articles")+theme_classic() +  theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1))+ scale_fill_brewer(palette = "Dark2") +   theme(text=element_text(size=18,  family="Arial"))
+```
+
+
+ 
+```{r, echo=FALSE, fig.cap= "Fig 3. Population distribution of studied cities in coastal urban ecology research, for each studied country.", fig.width=8}
+
+library(ggplot2)
+
+Articulos_final2 <- DF_by_citySF %>% filter(!is.na(pop)) %>% mutate(study_country = str_to_upper(study_country))%>% group_by(study_country) %>% mutate(max_country=max(pop, na.rm=TRUE)) 
+
+# Plot
+ggplot(Articulos_final2, aes(fct_reorder(study_country, max_country, .desc=TRUE),pop)) + geom_boxplot(varwidth=T, fill="plum") + 
+    labs(y="City population", x="Study country") + theme_classic() +  theme(axis.text.x = element_text(angle=70, vjust= 1, hjust=1)) + scale_y_continuous(labels = scales::comma) + scale_fill_brewer(palette = "Dark2")+   theme(text=element_text(size=15,  family="Arial"))
+
+```
+  
+
+```{r, echo=FALSE, fig.cap= "Fig 4. Distribution of articles, according to study models of research", fig.width=8}
+
+library(ggplot2)
+Articulos_final3 <- Articulos_final %>% mutate(study_model_subject= case_when(study_model %in% c("Algae", "Antibiotics", "Bacteria", "Birds", "Fishes","Invertebrates", "Lichens", "Mammals",  "Plants")~"Biological",
+
+study_model %in% c("Pollutants", "Aerosol", "Geomorphological", "Land structures",  "Marine structures",  "Remote sensing", "Seawater","Surface deterioration" ,"Meteorological","Risk measurment", "Water resource")~"Physical",
+
+study_model %in% c("Bioclimatic comfort", "Demographic", "Eco-cities", "Human activities and cultural heritage", "Perceptions","Public health",  "Sustainable cities")~"Social",
+
+study_model %in% c("Diversity", "Sustainable development",  "Ecological processes & patterns", "Ecosystem","Eco-cities", "Environmental management", "Green infrastructure")~"Others"))
+  
+write_csv(Articulos_final3, "Articulos_al2020_2.csv")
+
+ForGraph <- Articulos_final3 %>% group_by(study_model, study_model_subject) %>% summarise(n = n()) %>% ungroup() %>% mutate(study_model = fct_reorder(as.factor(study_model),n, .desc = TRUE))
+
+# Plot
+#ggplot(Articulos_final, aes(fct_infreq(study_model), group = study_model_subject)) + geom_bar(aes(fill=study_model_subject)) + labs(y="Number of articles", x="Study model")  +  theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1)) 
+
+ggplot(ForGraph, aes(x = fct_reorder(study_model_subject,n, .desc=TRUE), y = n, group = study_model)) + geom_col(aes(fill=study_model_subject), position="dodge", color="black") + geom_text(aes(label = study_model), size=3.5, position=position_dodge(0.9), angle=90,vjust=0.5, hjust=-0.04 ) + labs(y="Number of articles", x="Study model")  + theme_classic()+ ylim(c(0,45))+theme(legend.position = "none")+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))
+
+
+
+
+
+```
+
+```{r, echo=FALSE, fig.cap= "Fig 5. Distribution of articles, according to coastal environments, where research was done", fig.height=5}
+
+# Plot
+#ggplot(Articulos_final, aes(fct_infreq(coastal_environment))) + geom_bar(aes(fill = SubArea))+ labs(y="Number of articles", x="Coastal environment")  +theme_classic() + theme(axis.text.x = element_text(angle=70, vjust= 1, hjust=1))+ theme(text=element_text(size=18,  family="Arial"))
+
+Articulos_final <- Articulos_final %>% mutate(coastal_environment= str_replace(coastal_environment, "Coastal benthic", "Near-shore coastal benthic"))
+
+ggplot(Articulos_final, aes(fct_infreq(coastal_environment))) + geom_bar()+ labs(y="Number of articles", x="Coastal environment")  +theme_classic() + theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1))+ theme(text=element_text(size=18,  family="Arial"))
+
+```
+
+
+```{r, echo=FALSE, fig.cap= "Fig 6. Ecological paradigms in, of, and for the city for coastal urban ecology, according to the number of studies developed in each country (from white with zero articles to dark blue which is the maximum number of articles for each paradigm). Countries in black did not have any article published in the corresponding paradigm.", fig.height=8, fig.width=8}
+# 
+# library(dplyr)
+# library(knitr)
+# library(stringr)
+# 
+# Articulos_final2<- Articulos_final %>% mutate(study_country = str_to_lower(study_country))%>% mutate(study_country= str_replace(study_country, "usa", "united states of america"))%>% mutate(study_country= str_replace(study_country, "emiratos", "united arab emirates"))%>% mutate(study_country= str_replace(study_country, "korea del sur", "south korea"))%>% mutate(study_country= str_replace(study_country, "tanzania", "united republic of tanzania")) %>% mutate(study_country= str_replace(study_country, "the netherlands", "netherlands"))%>% mutate(study_country= str_replace(study_country, "uk", "united kingdom"))%>% mutate(study_country= str_replace(study_country, "brasil", "brazil"))
+# 
+# Articulos_final2$paradigm <- paste0(Articulos_final$paradigm, "_the_city")
+# resumen_country <- Articulos_final2 %>% mutate(paradigm = paste0(paradigm, paradigm)) %>% group_by(study_country, paradigm) %>% summarise(N=n())
+# 
+# library(tidyr)
+# resumen_country<- resumen_country %>% spread(key= paradigm, value=N)
+# 
+# library(choroplethr)
+# resumen_country_in <- resumen_country %>% dplyr::select(study_country, in_the_city)%>% rename(region=study_country, value=in_the_city)
+# 
+# resumen_country_of <- resumen_country%>%ungroup()%>% dplyr::select(study_country, of_the_city)%>% rename(region=study_country, value=of_the_city)
+# 
+# resumen_country_for <-resumen_country %>%ungroup()%>% dplyr::select(study_country, for_the_city) %>% rename(region=study_country, value=for_the_city)
+# 
+# In_map<- country_choropleth(resumen_country_in, "In the city", num_colors = 1)
+# Of_map<- country_choropleth(resumen_country_of, "Of the city", num_colors = 1)
+# For_map<- country_choropleth(resumen_country_for, "For the city", num_colors = 1)
+# 
+# choroplethis<- list(In_map, Of_map, For_map)
+# choroplethr_animate(choroplethis)
+# 
+# library(gridExtra)
+# grid.arrange(In_map, Of_map, For_map, ncol=1)
+
+```
+
+
+
+```{r, echo=FALSE, fig.cap= "Fig 7. Number of articles published during the years considering paradigms in, of, and for the cities. Trend lines represent quadratic regression fit, colour areas represent the 95% confidence interval.", fig.width=8}
+
+library(tidyverse)
+Tendencias<- Articulos_final %>% group_by(paradigm, publication_year) %>% summarise(N = n())
+
+library(ggplot2)
+
+#ggplot(Tendencias, aes(x = publication_year, y=N))+geom_point(aes(shape=paradigm))+ 
+#  stat_smooth(aes(fill=paradigm, lty = paradigm),method = "lm", color ="black", formula=y ~ x + I(x^2))+ 
+#  scale_fill_manual(name="New paradigm", labels=c("For the city", "In the city", "Of the city"),values=c("grey60", "grey55", "grey40"))+ scale_linetype_manual(name="New paradigm", labels=c("For the city", "In the city", "Of the city"),values=c(1:3))+ scale_shape_manual(name="New paradigm", labels=c("For the city", "In the city", "Of the city"),values=c(1:3)) + xlab("Publication year")+ ylab("Number of articles")+ theme_classic()
+  
+#name="New paradigm", labels=c("For the city", "In the city", "Of the city")
+
+ggplot(Tendencias, aes(x = publication_year, y=N)) + geom_point(aes(shape = paradigm))+ stat_smooth(aes(fill=paradigm),method = "lm", color ="black", formula=y ~ x + I(x^2),alpha=0.5)+ theme_classic()+ ylab("Number of articles")+ xlab("Publication year")+ scale_fill_brewer(palette="Dark2") + theme(text=element_text(size=18,  family="Arial"))
+
+#ggplot(Tendencias, aes(x = publication_year, y=N)) + geom_point()+ stat_smooth(aes(fill=Paradigm, lty = Paradigm),method = "lm", color ="black", formula=y ~ x + I(x^2))+ theme_classic()+ ylab("Number of articles")+ xlab("Publication year")+ scale_fill_brewer(palette="Dark2", name="Paradigm")
+
+
+```
+
+
+
+
+```{r, echo=FALSE, fig.cap= "Fig 8. Distribution of articles’ paradigms according to the spatial scale of the study: city, infra-city, and supra-city. The dashed line marks 2,625,373 people, that is the average size of a city in this study", fig.width=8}
+
+# library(ggplot2)
+# 
+# # BoxPlot
+# 
+# ggplot(Art_pop, aes(y=city_size, x=paradigm)) + geom_boxplot(aes(fill=spatial_scale))+labs(y="City population", x="Paradigms")  +   scale_y_continuous(labels = scales::comma) + theme_classic() +scale_fill_brewer(palette="Dark2", name="Spatial Scale", labels=c("City size", "Infra-city", "Supra-city"))+geom_hline(yintercept = 2625373,lty=2)+ theme(text=element_text(size=18,  family="Arial"))
+
+```
+
+
+
+```{r, echo=FALSE, fig.cap= "Fig 9. Distribution of articles’ paradigms according to study subject, study discipline, study component, approximation of the study, and type of analysis.", fig.height=14, fig.width=13.5}
+
+subj <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=theme), position="fill", color="black") +theme_classic() + scale_fill_brewer(palette="Dark2",  name="Study subject")+ theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
+
+disc <- ggplot(Articulos_final, aes(paradigm)) + coord_flip()+ geom_bar(aes(fill=disciplinary_focus), position="fill", color="black") + theme_classic() + scale_fill_brewer(palette="Dark2", name="Disciplinary focus", labels=c("Ecological", "Environmental policy", "Policy", "Social", "Socio-ecological", "Social policy")) + theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
+
+comp <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=component), position="fill", color="black")+ theme_classic()   + scale_fill_brewer(palette="Dark2", name="Study component", labels=c("Abiotic", "Abiotic and biotic", "Abiotic, biotic, and human","Abiotic and human", "Biotic", "Biotic and human", "Human")) + theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
+
+aprox <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=approximation), position="fill", color="black") + theme_classic()+ scale_fill_brewer(palette="Dark2",  name="Approximation of study") + theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1)) + theme(text=element_text(size=18,  family="Arial"))
+
+anal <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=type_of_analysis), position="fill", color="black") + theme_classic() +scale_fill_brewer(palette="Dark2", name="Type of analysis", labels=c("Modelling", "Other", "Qualitative", "Quantitative"))+ theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
+
+
+legend_1 <- get_legend(subj) %>% as_ggplot()
+legend_2 <- get_legend(disc) %>% as_ggplot()
+legend_3 <- get_legend(comp) %>% as_ggplot()
+legend_4 <- get_legend(aprox) %>% as_ggplot()
+legend_5 <- get_legend(anal) %>% as_ggplot()
+
+lay <-  rbind(c(1,1,1,1,NA),
+              c(1,1,1,1,6),
+              c(1,1,1,1,NA),
+              c(2,2,2,2,NA),
+              c(2,2,2,2,7),
+              c(2,2,2,2,NA),
+              c(3,3,3,3,NA),
+              c(3,3,3,3,8),
+              c(3,3,3,3,NA),
+              c(4,4,4,4,NA),
+              c(4,4,4,4,9),
+              c(4,4,4,4,NA),
+              c(5,5,5,5,NA),
+              c(5,5,5,5,10),
+              c(5,5,5,5,NA))
+
+
+grid.arrange(arrangeGrob(subj + theme(legend.position="none") + theme(axis.title.x = element_blank())+ xlab("Study subject"), 
+                         disc + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Disciplinary focus"), 
+                         comp + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Study component"), 
+                         aprox + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Study approximation") ,
+                         anal + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Type of analysis"),legend_1, legend_2, legend_3, legend_4, legend_5,layout_matrix = lay, left = text_grob("", rot = 90, vjust = 1, size =18)), bottom= text_grob("Proportion of articles", size =18)) 
+
+
+
+```
+
+
+
+```{r, echo=FALSE, fig.cap= "Fig 10. Network analysis for co-citations of articles presented in this coastal urban ecology review, considering the three paradigms proposed. Each dot represent a study and the colour indicates the paradigms (in-, of- and for- the cities). Directed edges go from the article citing to the article being cited. ", dev='svg'}
+library(tidyverse) 
+red <-read_rds("red.RDS")
+red +scale_color_brewer(palette="Dark2", name="Paradigm")+ theme(text=element_text(size=18,  family="Arial"))
+```
+
+
+
