@@ -47,9 +47,57 @@ include_graphics("/home/giorgia/Documents/Doctorado tesis/Review Urban ecology/D
 
 ```
 
+```{r, echo=FALSE, fig.cap= "Fig 9. Distribution of articles’ paradigms according to study subject, study discipline, study component, approximation of the study, and type of analysis.", fig.height=14, fig.width=13.5}
+
+Anos_subj <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(theme, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(theme=reorder(theme, N))
+subj <-ggplot(Anos_subj, aes(x = publication_year, y=N)) + geom_col(aes(fill=theme),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Study subject")
+
+Anos_disc <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(disciplinary_focus, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(disciplinary_focus=reorder(disciplinary_focus, N))
+disc <-ggplot(Anos_disc, aes(x = publication_year, y=N)) + geom_col(aes(fill=disciplinary_focus),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45)) + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Disciplinary focus") +
+  scale_fill_brewer(palette="Dark2", name="Disciplinary focus", labels=c("Social", "Social policy", "Environmental policy", "Socio-ecological", "Ecological"))
+
+Anos_comp <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(component, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(component=reorder(component, N))
+comp <- ggplot(Anos_comp, aes(x = publication_year, y=N)) + geom_col(aes(fill=component),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45)) + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Study component") +
+scale_fill_brewer(palette="Dark2", name="Study component", labels=c("Biotic and human", "Biotic", "Human", "Abiotic and biotic", "Abiotic", "Abiotic, biotic, and human","Abiotic and human"))
+
+Anos_aprox <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(approximation, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(approximation=reorder(approximation, N))
+aprox <-ggplot(Anos_aprox, aes(x = publication_year, y=N)) + geom_col(aes(fill=approximation),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Approximation of study")
+
+Anos_anal <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(type_of_analysis, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(type_of_analysis=reorder(type_of_analysis, N))
+anal <-ggplot(Anos_anal, aes(x = publication_year, y=N)) + geom_col(aes(fill=type_of_analysis),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+  theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Type of analysis") + scale_fill_brewer(palette="Dark2", name="Type of analysis", labels=c("Other", "Modelling", "Qualitative", "Quantitative"))
+
+
+#legend_1 <- get_legend(Anos_subj) %>% as_ggplot()
+#legend_2 <- get_legend(Anos_disc) %>% as_ggplot()
+#legend_3 <- get_legend(Anos_comp) %>% as_ggplot()
+#legend_4 <- get_legend(Anos_aprox) %>% as_ggplot()
+# legend_5 <- get_legend(Anos_anal) %>% as_ggplot()
+
+# lay <-  rbind(c(1,1,1,1,NA),
+#               c(1,1,1,1,6),
+#               c(1,1,1,1,NA),
+#               c(2,2,2,2,NA),
+#               c(2,2,2,2,7),
+#               c(2,2,2,2,NA),
+#               c(3,3,3,3,NA),
+#               c(3,3,3,3,8),
+#               c(3,3,3,3,NA),
+#               c(4,4,4,4,NA),
+#               c(4,4,4,4,9),
+#               c(4,4,4,4,NA),
+#               c(5,5,5,5,NA),
+#               c(5,5,5,5,10),
+#               c(5,5,5,5,NA))
+
+
+grid.arrange(subj, disc, comp, aprox, anal, ncol=1 )
 
 
 
+
+
+
+```
 
 ```{r, echo=FALSE, fig.cap= "Fig 3. Number of articles for five types of urban centers classification in the world, where research in coastal urban ecology was made."}
 
@@ -80,28 +128,57 @@ ggplot(Articulos_final2, aes(fct_reorder(study_country, max_country, .desc=TRUE)
 ```{r, echo=FALSE, fig.cap= "Fig 4. Distribution of articles, according to study models of research", fig.width=8}
 
 library(ggplot2)
-Articulos_final3 <- Articulos_final %>% mutate(study_model_subject= case_when(study_model %in% c("Algae", "Antibiotics", "Bacteria", "Birds", "Fishes","Invertebrates", "Lichens", "Mammals",  "Plants")~"Biological",
+Articulos_final3 <- Articulos_final %>% mutate(study_model_subject= case_when(study_model %in% c("Algae", "Antibiotics", "Bacteria", "Birds", "Fishes","Invertebrates", "Lichens", "Mammals",  "Plants")~"Bio-species",
 
-study_model %in% c("Pollutants", "Aerosol", "Geomorphological", "Land structures",  "Marine structures",  "Remote sensing", "Seawater","Surface deterioration" ,"Meteorological","Risk measurment", "Water resource")~"Physical",
+study_model %in% c("Pollutants", "Aerosol", "Geomorphological", "Land structures", "Remote sensing", "Seawater","Surface deterioration" ,"Meteorological","Risk measurment", "Water resource")~"Physical",
 
-study_model %in% c("Bioclimatic comfort", "Demographic", "Eco-cities", "Human activities and cultural heritage", "Perceptions","Public health",  "Sustainable cities")~"Social",
+study_model %in% c("Bioclimatic comfort", "Demographic",  "Human activities and cultural heritage", "Perceptions","Public health",  "Sustainable development")~"Social",
 
-study_model %in% c("Diversity", "Sustainable development",  "Ecological processes & patterns", "Ecosystem","Eco-cities", "Environmental management", "Green infrastructure")~"Others"))
+study_model %in% c("Ecosystem", "Ecological processes & patterns", "Environmental management", "Diversity")~"Bio-ecosystem",
   
+study_model %in% c( "Sustainable cities","Eco-cities", "Green infrastructure", "Marine structures")~"Soc-eco-tecnological"))
+
+
 write_csv(Articulos_final3, "Articulos_al2020_2.csv")
 
-ForGraph <- Articulos_final3 %>% group_by(study_model, study_model_subject) %>% summarise(n = n()) %>% ungroup() %>% mutate(study_model = fct_reorder(as.factor(study_model),n, .desc = TRUE))
+ForGraph <- Articulos_final3 %>% group_by(study_model, study_model_subject) %>% summarise(n = n()) %>% ungroup() %>% mutate(study_model = fct_reorder(as.factor(study_model),n, .desc = TRUE)) 
 
 # Plot
 #ggplot(Articulos_final, aes(fct_infreq(study_model), group = study_model_subject)) + geom_bar(aes(fill=study_model_subject)) + labs(y="Number of articles", x="Study model")  +  theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1)) 
 
-ggplot(ForGraph, aes(x = fct_reorder(study_model_subject,n, .desc=TRUE), y = n, group = study_model)) + geom_col(aes(fill=study_model_subject), position="dodge", color="black") + geom_text(aes(label = study_model), size=3.5, position=position_dodge(0.9), angle=90,vjust=0.5, hjust=-0.04 ) + labs(y="Number of articles", x="Study model")  + theme_classic()+ ylim(c(0,45))+theme(legend.position = "none")+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))
+ggplot(ForGraph, aes(x = fct_reorder(study_model_subject,n, .desc=TRUE), y = n, group = study_model)) + geom_col(aes(fill=study_model_subject), position="dodge", color="black") + geom_text(aes(label = study_model), size=3.5, position=position_dodge(0.9), angle=90,vjust=0.5, hjust=-0.04 ) + labs(y="Number of articles", x="Study model")  + theme_classic()+ ylim(c(0,45))+theme(legend.position = "none")+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ theme(axis.text.x = element_text(angle=30, vjust= 1, hjust=1))
 
 
 
 
 
 ```
+
+
+
+
+
+
+
+
+
+
+```{r, echo=FALSE, fig.cap= "Fig 4. Distribution of articles, according to study models of research", fig.width=8}
+
+
+  
+#write_csv(Articulos_final3, "Articulos_al2020_2.csv")
+
+#ForGraph <- Articulos_final3 %>% group_by(study_model, study_model_subject) %>% summarise(n = n()) %>% ungroup() %>% mutate(study_model = fct_reorder(as.factor(study_model),n, .desc = TRUE))
+
+Años_model <- Articulos_final3 %>% dplyr::filter(publication_year>1990) %>% group_by(study_model_subject, publication_year) %>% summarise(N = n()) 
+
+
+ggplot(Años_model, aes(x = publication_year, y=N)) + geom_col(aes(fill=study_model_subject),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Study model")
+
+
+```
+
 
 ```{r, echo=FALSE, fig.cap= "Fig 5. Distribution of articles, according to coastal environments, where research was done", fig.height=5}
 
@@ -189,7 +266,7 @@ ggplot(Tendencias, aes(x = publication_year, y=N)) + geom_point(aes(shape = para
 
 subj <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=theme), position="fill", color="black") +theme_classic() + scale_fill_brewer(palette="Dark2",  name="Study subject")+ theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
 
-disc <- ggplot(Articulos_final, aes(paradigm)) + coord_flip()+ geom_bar(aes(fill=disciplinary_focus), position="fill", color="black") + theme_classic() + scale_fill_brewer(palette="Dark2", name="Disciplinary focus", labels=c("Ecological", "Environmental policy", "Policy", "Social", "Socio-ecological", "Social policy")) + theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
+disc <- ggplot(Articulos_final, aes(paradigm)) + coord_flip()+ geom_bar(aes(fill=disciplinary_focus), position="fill", color="black") + theme_classic() + scale_fill_brewer(palette="Dark2", name="Disciplinary focus", labels=c("Ecological", "Environmental policy", "Social", "Socio-ecological", "Social policy")) + theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
 
 comp <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=component), position="fill", color="black")+ theme_classic()   + scale_fill_brewer(palette="Dark2", name="Study component", labels=c("Abiotic", "Abiotic and biotic", "Abiotic, biotic, and human","Abiotic and human", "Biotic", "Biotic and human", "Human")) + theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
 
