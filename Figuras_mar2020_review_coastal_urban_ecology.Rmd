@@ -2,7 +2,9 @@
 title: "Figuras finales review coastal urban ecology"
 author: "G.Graells"
 date: "marzo 2020"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, comment = FALSE, warning = FALSE, message = FALSE)
@@ -50,7 +52,7 @@ include_graphics("/home/giorgia/Documents/Doctorado tesis/Review Urban ecology/D
 ```{r, echo=FALSE, fig.cap= "Fig 9. Distribution of articles’ paradigms according to study subject, study discipline, study component, approximation of the study, and type of analysis.", fig.height=14, fig.width=13.5}
 
 Anos_subj <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(theme, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(theme=reorder(theme, N))
-subj <-ggplot(Anos_subj, aes(x = publication_year, y=N)) + geom_col(aes(fill=theme),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Study subject")
+subj <-ggplot(Anos_subj, aes(x = publication_year, y=N)) + geom_col(aes(fill=theme),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Main research objective")
 
 Anos_disc <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(disciplinary_focus, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(disciplinary_focus=reorder(disciplinary_focus, N))
 disc <-ggplot(Anos_disc, aes(x = publication_year, y=N)) + geom_col(aes(fill=disciplinary_focus),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45)) + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Disciplinary focus") +
@@ -61,7 +63,7 @@ comp <- ggplot(Anos_comp, aes(x = publication_year, y=N)) + geom_col(aes(fill=co
 scale_fill_brewer(palette="Dark2", name="Study component", labels=c("Biotic and human", "Biotic", "Human", "Abiotic and biotic", "Abiotic", "Abiotic, biotic, and human","Abiotic and human"))
 
 Anos_aprox <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(approximation, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(approximation=reorder(approximation, N))
-aprox <-ggplot(Anos_aprox, aes(x = publication_year, y=N)) + geom_col(aes(fill=approximation),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Approximation of study")
+aprox <-ggplot(Anos_aprox, aes(x = publication_year, y=N)) + geom_col(aes(fill=approximation),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Study approach")
 
 Anos_anal <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(type_of_analysis, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(type_of_analysis=reorder(type_of_analysis, N))
 anal <-ggplot(Anos_anal, aes(x = publication_year, y=N)) + geom_col(aes(fill=type_of_analysis),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+  theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Type of analysis") + scale_fill_brewer(palette="Dark2", name="Type of analysis", labels=c("Other", "Modelling", "Qualitative", "Quantitative"))
@@ -90,7 +92,7 @@ anal <-ggplot(Anos_anal, aes(x = publication_year, y=N)) + geom_col(aes(fill=typ
 #               c(5,5,5,5,NA))
 
 
-grid.arrange(subj, disc, comp, aprox, anal, ncol=1 )
+grid.arrange(disc, aprox, anal, comp, subj,  ncol=1 )
 
 
 
@@ -106,10 +108,11 @@ library(dplyr)
 
 Forgraph<-Articulos_final %>% mutate(city_categ=case_when(city_size <100000~"Non-urban areas", city_size >=100000 & city_size <500000~"Small cities", city_size >=500000 & city_size <1000000~"Medium cities" , city_size >=1000000 & city_size <5000000~"Large cities" , city_size >=5000000 & city_size <10000000~"Very large cities" , city_size >=10000000~"Megacities"  )) %>% mutate(city_categ=fct_relevel(city_categ, "Towns", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" )) %>% filter(!is.na(city_categ))
 
-
 ggplot(Forgraph, aes(city_categ)) + geom_bar() +labs(x="City population", y="Number of articles")+theme_classic() +  theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1))+ scale_fill_brewer(palette = "Dark2") +   theme(text=element_text(size=18,  family="Arial"))
-```
 
+#(nrow(dplyr::filter(Forgraph, city_categ=="Large cities"))/ nrow(Forgraph))*100
+```
+((nrow(dplyr::filter(Articulos_final,disciplinary_focus=="e"))/ nrow(Articulos_final))*100, 2)`%)
 
  
 ```{r, echo=FALSE, fig.cap= "Fig 3. Population distribution of studied cities in coastal urban ecology research, for each studied country.", fig.width=8}
@@ -125,7 +128,7 @@ ggplot(Articulos_final2, aes(fct_reorder(study_country, max_country, .desc=TRUE)
 ```
   
 
-```{r, echo=FALSE, fig.cap= "Fig 4. Distribution of articles, according to study models of research", fig.width=8}
+```{r, echo=FALSE, fig.cap= "Fig 4. Distribution of articles, according to study models of research", fig.height=10}
 
 library(ggplot2)
 Articulos_final3 <- Articulos_final %>% mutate(study_model_subject= case_when(study_model %in% c("Algae", "Antibiotics", "Bacteria", "Birds", "Fishes","Invertebrates", "Lichens", "Mammals",  "Plants")~"Bio-species",
@@ -138,23 +141,21 @@ study_model %in% c("Ecosystem", "Ecological processes & patterns", "Environmenta
   
 study_model %in% c( "Sustainable cities","Eco-cities", "Green infrastructure", "Marine structures")~"Soc-eco-tecnological"))
 
-
-write_csv(Articulos_final3, "Articulos_al2020_2.csv")
-
 ForGraph <- Articulos_final3 %>% group_by(study_model, study_model_subject) %>% summarise(n = n()) %>% ungroup() %>% mutate(study_model = fct_reorder(as.factor(study_model),n, .desc = TRUE)) 
 
-# Plot
-#ggplot(Articulos_final, aes(fct_infreq(study_model), group = study_model_subject)) + geom_bar(aes(fill=study_model_subject)) + labs(y="Number of articles", x="Study model")  +  theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1)) 
+detalle <- ggplot(ForGraph, aes(x = fct_reorder(study_model_subject,n, .desc=TRUE), y = n, group = study_model)) + geom_col(aes(fill=study_model_subject), position="dodge", color="black") + geom_text(aes(label = study_model), size=5.3, position=position_dodge(0.9), angle=90,vjust=0.5, hjust=-0.04 ) + labs(y="Number of articles", x="Study model")  + theme_classic()+ ylim(c(0,60))+theme(legend.position = "none")+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ theme(axis.text.x = NULL)
 
-ggplot(ForGraph, aes(x = fct_reorder(study_model_subject,n, .desc=TRUE), y = n, group = study_model)) + geom_col(aes(fill=study_model_subject), position="dodge", color="black") + geom_text(aes(label = study_model), size=3.5, position=position_dodge(0.9), angle=90,vjust=0.5, hjust=-0.04 ) + labs(y="Number of articles", x="Study model")  + theme_classic()+ ylim(c(0,45))+theme(legend.position = "none")+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ theme(axis.text.x = element_text(angle=30, vjust= 1, hjust=1))
+Años_model <- Articulos_final3 %>% dplyr::filter(publication_year>1990) %>% group_by(study_model_subject, publication_year) %>% summarise(N = n()) 
 
+tpo <-ggplot(Años_model, aes(x = publication_year, y=N)) + geom_col(aes(fill=study_model_subject),position = "stack", color="black", size=0.5)+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Study model")
 
-
-
-
+grid.arrange(detalle, tpo, ncol=1)
 ```
 
 
+```{r, fig.width=9}
+ggplot(ForGraph, aes(x = fct_reorder(study_model_subject,n, .desc=TRUE), y = n, group = study_model)) + geom_col(aes(fill=study_model_subject), position="dodge", color="black") + geom_text(aes(label = study_model), size=4, position=position_dodge(0.9), angle=90,vjust=0.5, hjust=-0.04 ) + labs(y="Number of articles", x="Study model")  + theme_classic()+ ylim(c(0,47))+theme(legend.position = "none")+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ theme(axis.text.x = NULL)
+```
 
 
 
@@ -171,23 +172,18 @@ ggplot(ForGraph, aes(x = fct_reorder(study_model_subject,n, .desc=TRUE), y = n, 
 
 #ForGraph <- Articulos_final3 %>% group_by(study_model, study_model_subject) %>% summarise(n = n()) %>% ungroup() %>% mutate(study_model = fct_reorder(as.factor(study_model),n, .desc = TRUE))
 
-Años_model <- Articulos_final3 %>% dplyr::filter(publication_year>1990) %>% group_by(study_model_subject, publication_year) %>% summarise(N = n()) 
-
-
-ggplot(Años_model, aes(x = publication_year, y=N)) + geom_col(aes(fill=study_model_subject),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Study model")
-
 
 ```
 
 
 ```{r, echo=FALSE, fig.cap= "Fig 5. Distribution of articles, according to coastal environments, where research was done", fig.height=5}
 
-# Plot
-#ggplot(Articulos_final, aes(fct_infreq(coastal_environment))) + geom_bar(aes(fill = SubArea))+ labs(y="Number of articles", x="Coastal environment")  +theme_classic() + theme(axis.text.x = element_text(angle=70, vjust= 1, hjust=1))+ theme(text=element_text(size=18,  family="Arial"))
-
 Articulos_final <- Articulos_final %>% mutate(coastal_environment= str_replace(coastal_environment, "Coastal benthic", "Near-shore coastal benthic"))
 
 ggplot(Articulos_final, aes(fct_infreq(coastal_environment))) + geom_bar()+ labs(y="Number of articles", x="Coastal environment")  +theme_classic() + theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1))+ theme(text=element_text(size=18,  family="Arial"))
+
+#(nrow(dplyr::filter(Articulos_final, coastal_environment=="Near-shore terrestrial"))/ nrow(Articulos_final))*100
+
 
 ```
 
@@ -262,7 +258,7 @@ ggplot(Tendencias, aes(x = publication_year, y=N)) + geom_point(aes(shape = para
 
 
 
-```{r, echo=FALSE, fig.cap= "Fig 9. Distribution of articles’ paradigms according to study subject, study discipline, study component, approximation of the study, and type of analysis.", fig.height=14, fig.width=13.5}
+```{r, echo=FALSE, fig.cap= "Fig 9. Distribution of articles’ paradigms according to study subject, study discipline, study component, approximation of the study, and type of analysis.", fig.height=14, fig.width=14}
 
 subj <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=theme), position="fill", color="black") +theme_classic() + scale_fill_brewer(palette="Dark2",  name="Study subject")+ theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
 
@@ -275,11 +271,11 @@ aprox <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fi
 anal <- ggplot(Articulos_final, aes(paradigm)) + coord_flip() + geom_bar(aes(fill=type_of_analysis), position="fill", color="black") + theme_classic() +scale_fill_brewer(palette="Dark2", name="Type of analysis", labels=c("Modelling", "Other", "Qualitative", "Quantitative"))+ theme(legend.title=element_blank()) + guides(fill = guide_legend(ncol = 1))+ theme(text=element_text(size=18,  family="Arial"))
 
 
-legend_1 <- get_legend(subj) %>% as_ggplot()
-legend_2 <- get_legend(disc) %>% as_ggplot()
-legend_3 <- get_legend(comp) %>% as_ggplot()
-legend_4 <- get_legend(aprox) %>% as_ggplot()
-legend_5 <- get_legend(anal) %>% as_ggplot()
+legend_1 <- get_legend(disc) %>% as_ggplot()
+legend_2 <- get_legend(aprox) %>% as_ggplot()
+legend_3 <- get_legend(anal) %>% as_ggplot()
+legend_4 <- get_legend(comp) %>% as_ggplot()
+legend_5 <- get_legend(subj) %>% as_ggplot()
 
 lay <-  rbind(c(1,1,1,1,NA),
               c(1,1,1,1,6),
@@ -298,11 +294,11 @@ lay <-  rbind(c(1,1,1,1,NA),
               c(5,5,5,5,NA))
 
 
-grid.arrange(arrangeGrob(subj + theme(legend.position="none") + theme(axis.title.x = element_blank())+ xlab("Study subject"), 
-                         disc + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Disciplinary focus"), 
-                         comp + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Study component"), 
-                         aprox + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Study approximation") ,
-                         anal + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Type of analysis"),legend_1, legend_2, legend_3, legend_4, legend_5,layout_matrix = lay, left = text_grob("", rot = 90, vjust = 1, size =18)), bottom= text_grob("Proportion of articles", size =18)) 
+grid.arrange(arrangeGrob(disc + theme(legend.position="none") + theme(axis.title.x = element_blank())+ xlab("Disciplinary focus"), 
+                         aprox + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Research approach"), 
+                         anal + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Type of analysis"), 
+                         comp + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Study component") ,
+                         subj + theme(legend.position="none")+theme(axis.title.x = element_blank())+ xlab("Main research objective"),legend_1, legend_2, legend_3, legend_4, legend_5,layout_matrix = lay, left = text_grob("", rot = 90, vjust = 1, size =18)), bottom= text_grob("Proportion of articles", size =18)) 
 
 
 
