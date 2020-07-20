@@ -10,13 +10,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Documentos y archivos
 
 
-**ggmaps FEE.R**  se realizan los mapas de artículos publicados por país o ciudad, considerando la población por país y ciudad (tambien crecimiento).
-Se incluye un mapa actualizado con scraping de datos para la descarga **screaping.R**. Necesita los archivos **Pop2020.csv**  y **Articulos_al2020.csv**.
+**ggmaps FEE.R**  se realizaon los mapas de artículos publicados por país o ciudad, considerando la población por país y ciudad (tambien crecimiento).
+Se intentó modificar el codigo con la descarga mediante **screaping.R** para generar **Pop2020.csv**, pero en realidad esos datos solo eran estimaciones de poblacion del 2018-2019 y 2020 mundial.
+el archivo **DF_by_citySF.rds** cuenta con la info  de **UNdata.csv** con datos correctos, pero el codigo donde se realizó el filtrado considerando solo los articulos de  **Articulos_al2020.csv**, fue borrado sin querer.
+el archivo **Correccion_UNdata_pobl** tomó **UNdata.csv** y lo modifico (para recuperar lo que fue borrado) y se dejaron los datos necearios apra el trabajo, siendo guardado como **UNdata_corregido.rds**
 
 **Figuras_mar2020_review_coastal** Posee todas las figuras del review actualizados.
+ultima actualizacion con correcciones de coautorees, comentarios dde arreglos de tablas y arreglos en las poblaciones a partir de **DF_by_citySF.rds**
 
 **2020_15mar_COASTALREVIEW_Giorgia** El último manuscrito en RMD, contiene parte importante de las referencias **tesis_ref_2019sept.bib**, pero el actualizado está en word por las revisiones. 
+Ultimo manuscrito con correcciones coautores solo en formato word
 
 **NuevoRedes.R** realiza el análisis de redes de referencias cruzadas entre paradigmas del review. Se parte de **DFbib.rds**. El producto es la red **red.RDS** que luego es graficado en **Figuras_mar2020_review_coastal** 
 
 Se incluye lo trabajado en la revisión de lo que se publicará archivos word
+
+Arreglo de figuras en **Figuras_mar2020_review_coastal** con correcciones en GIMP en word
