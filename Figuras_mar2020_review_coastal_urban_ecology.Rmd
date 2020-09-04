@@ -310,6 +310,18 @@ ggplot(Tendencias, aes(x = publication_year, y=N)) + geom_point(aes(shape = para
 
 ```
 
+```{r}
+library(purrr)
+library(broom)
+
+Regs <- Tendencias %>% split(.$paradigm) %>% map(~lm(N ~ publication_year + I(publication_year^2), data = .x)) %>% map(glance) %>% map(~select(.x,r.squared, adj.r.squared, p.value, df)) %>% reduce(rbind)
+
+Regs$Paradigm <- c("For the city", "In the city", "Of the city")
+Regs <- Regs[,c(5,1,2,3,4)]
+
+knitr::kable(Regs, caption ="Table 1. Quadratic regression values for paradigms *in*, *of*, and *for the city* and the relationship of articles published during the years" )
+```
+
 
 
 
