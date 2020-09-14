@@ -189,6 +189,35 @@ ggplot()+ geom_sf(data=DF,  size=0.2, color="#585858", fill="#666666") +theme_bw
 
 
 
+
+
+```{r, echo=FALSE, fig.cap= "Fig 3. Population distribution of studied cities in coastal urban ecology research, for each studied country.", fig.width=8}
+
+#obtenido del codigo en el script: ggmaps FEE.R
+
+library(ggplot2)
+
+data("countriesHigh")
+DF <- st_as_sf(countriesHigh)  %>% dplyr::filter(ADMIN != "Antarctica")
+DF_by_citySF <- read_rds("DF_by_citySF.rds") 
+
+DF_by_citySF <- DF_by_citySF %>% 
+  mutate(city_categ=case_when(pop <100000~"Non-urban areas", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
+  mutate(city_categ=fct_relevel(city_categ, "Non-urban areas", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))
+
+ggplot()+ geom_sf(data=DF,  size=0.2, color="#585858", fill="#848484") +theme_bw() + 
+  geom_sf(data=DF_by_citySF, aes(size=N, fill=city_categ), color="black", shape=21, show.legend = "point") +  
+  scale_fill_manual(name="City size", values = c("#1a9850", "#91cf60", "#d9ef8b", "#fee08b", "#fc8d59", "#d73027")) + 
+  theme(legend.position = "bottom")+ scale_size(name="Number of articles")
+
+
+
+###probando tendencias de megacities y large cities:
+
+
+
+```
+
   
   
   
