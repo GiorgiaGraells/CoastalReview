@@ -69,8 +69,27 @@ Articulos_final <- read_csv("Articulos_al2020.csv")%>% mutate(study_country = st
   mutate(study_city= str_replace(study_city, "swansea city", "swansea")) %>% 
 mutate(study_city= str_replace(study_city, "tywyn", "swansea")) 
 
+
+### Chequear que ciudades de pop2020 estan en Articulos final
+
+# estas ciudades estan de seguro
+En <- pop2020$V2[pop2020$V2 %in% Articulos_final$study_city]
+
+
+#Estas no estan o estan mal escritas
+No_En <- pop2020$V2[!(pop2020$V2 %in% Articulos_final$study_city)]
+
+
+
+
+
 Articulos_final <- Articulos_final %>% mutate(study_country = str_to_lower(study_country)) %>% mutate(study_city = str_to_lower(study_city)) %>% 
-  group_by(study_country, study_city) %>% summarise(N=n())
+  group_by(study_country, study_city, city_size) %>% summarise(N=n()) %>% ungroup()
+
+
+## Remplacemos las que estan con la poblacion actual
+
+
  
   #juntado df
 DF_by_city <-  full_join(city_pop, Articulos_final) %>% dplyr::filter(!(study_city %in% c("other", "review", "many", NA))) %>% 
@@ -89,15 +108,16 @@ DF <- st_as_sf(countriesHigh)  %>% dplyr::filter(ADMIN != "Antarctica")
 DF_by_citySF <- read_rds("DF_by_citySF.rds")
 
 DF_by_citySF <- DF_by_citySF %>% 
-  mutate(city_categ=case_when(pop <100000~"Towns", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
-  mutate(city_categ=fct_relevel(city_categ, "Towns", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))
+  mutate(city_categ=case_when(pop <100000~"Non-urban areas", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
+  mutate(city_categ=fct_relevel(city_categ, "Non-urban areas", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))
 
 
 ggplot()+ geom_sf(data=DF,  size=0.2, color="#585858", fill="#666666") +theme_bw() + geom_sf(data=DF_by_citySF, aes(size=N, color=city_categ), show.legend = "point") + 
-  scale_color_manual(values = c("#1a9850", "#91cf60", "#d9ef8b", "#fee08b", "#fc8d59", "#d73027")) + theme(legend.position = "bottom")
+  scale_color_manual(name="City size",values = c("#1a9850", "#91cf60", "#d9ef8b", "#fee08b", "#fc8d59", "#d73027")) + theme(legend.position = "bottom")+ scale_size(name="Number of articles")
 
-ggplot() + geom_sf(data = DF2, aes(fill = Articles), lwd=0.05) + facet_grid(Paradigm~.) + theme_bw()+ 
-  scale_fill_gradient(low="#56B1F7", high="#132B43", name="Number of articles")
+
+
+############
 
 
 cor(DF_by_citySF$pop, DF_by_citySF$N, method = "spearman")
@@ -212,5 +232,6 @@ c <-ggplot() + geom_sf(data = DF2, aes(fill = for_the_city), lwd=0.05) + theme_c
   scale_fill_gradient(low="#f2f4f7", high="#06115e", na.value = "white", name="Number of articles",labels=function(x) format(x,big.mark = ",", scientific = FALSE))+ labs(title = "For the city")
 
 grid.arrange(a,b,c, ncol=1)
+
 
 

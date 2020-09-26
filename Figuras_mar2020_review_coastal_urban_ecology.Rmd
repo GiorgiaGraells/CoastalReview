@@ -7,7 +7,7 @@ output:
     df_print: paged
 ---
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, comment = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, comment = FALSE, warning = FALSE, message = FALSE, cache = TRUE)
 
 library(ggplot2)
 library(forcats)
@@ -41,7 +41,7 @@ Articulos_final <- read_csv("Articulos_al2020.csv")
 
 
 
-```{r, echo=FALSE, fig.cap="Fig 1. Decision tree of articles selected for coastal urban ecology in literature" }
+```{r, echo=FALSE }
 library(knitr)
 include_graphics("/home/giorgia/Documents/Doctorado tesis/Review Urban ecology/Decision tree final 2020.png")
 ```
@@ -51,7 +51,7 @@ include_graphics("/home/giorgia/Documents/Doctorado tesis/Review Urban ecology/D
 
 ```
 
-```{r, echo=FALSE, fig.cap= "Fig 9. Distribution of articles’ paradigms according to study subject, study discipline, study component, approximation of the study, and type of analysis.", fig.height=14, fig.width=13.5}
+```{r, echo=FALSE, fig.height=14, fig.width=13.5}
 
 Anos_subj <- Articulos_final%>% dplyr::filter(publication_year>1990) %>% group_by(theme, publication_year) %>% summarise(N = n()) %>% ungroup()  %>% mutate(theme=reorder(theme, N))
 subj <-ggplot(Anos_subj, aes(x = publication_year, y=N)) + geom_col(aes(fill=theme),position = "stack")+  labs(y="Number of articles", x="Publication year")  + theme_classic()+ ylim(c(0,45))+ scale_fill_brewer(palette = "Dark2") + theme(text=element_text(size=18,  family="Arial"))+ labs(fill="Main research objective")
@@ -105,93 +105,57 @@ grid.arrange(disc, aprox, anal, subj,  ncol=1 )
 
 ```{r, echo=FALSE, fig.cap= "Fig 3. Number of articles for five types of urban centers classification in the world, where research in coastal urban ecology was made."}
 
-data("countriesHigh")
-DF <- st_as_sf(countriesHigh)  %>% dplyr::filter(ADMIN != "Antarctica")
-DF_by_citySF <- read_rds("DF_by_citySF.rds") 
-
-DF_by_citySF <- DF_by_citySF %>% 
-  mutate(city_categ=case_when(pop <100000~"Non-urban areas", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
-  mutate(city_categ=fct_relevel(city_categ, "Non-urban areas", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))
-
-ggplot(DF_by_citySF, aes(city_categ)) + geom_bar() +labs(x="City population", y="Number of articles")+theme_classic() +  theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1))+ scale_fill_brewer(palette = "Dark2") +   theme(text=element_text(size=18,  family="Arial"))
+# data("countriesHigh")
+# DF <- st_as_sf(countriesHigh)  %>% dplyr::filter(ADMIN != "Antarctica")
+# DF_by_citySF <- read_rds("DF_by_citySF.rds") 
+# 
+# DF_by_citySF <- DF_by_citySF %>% 
+#   mutate(city_categ=case_when(pop <100000~"Non-urban areas", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
+#   mutate(city_categ=fct_relevel(city_categ, "Non-urban areas", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))
+# 
+# ggplot(DF_by_citySF, aes(city_categ)) + geom_bar() +labs(x="City population", y="Number of articles")+theme_classic() +  theme(axis.text.x = element_text(angle=45, vjust= 1, hjust=1))+ scale_fill_brewer(palette = "Dark2") +   theme(text=element_text(size=18,  family="Arial"))
 
 #(nrow(dplyr::filter(Forgraph, city_categ=="Large cities"))/ nrow(Forgraph))*100
-```
-((nrow(dplyr::filter(Articulos_final,disciplinary_focus=="e"))/ nrow(Articulos_final))*100, 2)`%)
-
-
-```{r, echo=FALSE, fig.cap= "Fig 3. Number of articles for five types of urban centers classification in the world, where research in coastal urban ecology was made."}
-
-DF_by_citySF <- read_rds("DF_by_citySF.rds") 
-
-
-Prop_by_Category <- DF_by_citySF %>% as.data.frame() %>% 
-  mutate(city_categ=case_when(pop <100000~"Non-urban areas", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
-  mutate(city_categ=fct_relevel(city_categ, "Non-urban areas", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))%>% ungroup()%>% 
-  mutate(Total = sum(N), Prop = N/Total) %>% group_by(city_categ) %>% summarise(Prop_Studies = sum(Prop))
-
-UNdata_Prop <- read_rds("UNdata_corregido.rds") %>% 
-          group_by(city_categ) %>% 
-         summarise(n = n()) %>% 
-         mutate(Prop_categ = n/sum(n)) %>% 
-         dplyr::select(-n)
-
-Prop_total <- full_join(Prop_by_Category, UNdata_Prop) %>% 
-  pivot_longer(starts_with("Prop"), names_to = "Type", values_to = "Proportion") %>% 
-  mutate(Type = ifelse(Type == "Prop_Studies", "Observed", "Expected"))
-
-ggplot(Prop_total, aes(x = city_categ, y = Proportion)) + geom_col(aes(fill = Type), position = "dodge") + theme_classic()+ xlab("City category")+
-  scale_fill_brewer(palette="Dark2", name=" ") +theme(text=element_text(size=18,  family="Arial"))
-
-
+#((nrow(dplyr::filter(Articulos_final,disciplinary_focus=="e"))/ nrow(Articulos_final))*100, 2)`%)
 ```
 
 
 
+```{r, echo=FALSE }
+
+# DF_by_citySF <- read_rds("DF_by_citySF.rds") 
+# 
+# 
+# Prop_by_Category <- DF_by_citySF %>% as.data.frame() %>% 
+#   mutate(city_categ=case_when(pop <100000~"Non-urban areas", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
+#   mutate(city_categ=fct_relevel(city_categ, "Non-urban areas", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))%>% ungroup()%>% 
+#   mutate(Total = sum(N), Prop = N/Total) %>% group_by(city_categ) %>% summarise(Prop_Studies = sum(Prop))
+# 
+# UNdata_Prop <- read_rds("UNdata_corregido.rds") %>% 
+#           group_by(city_categ) %>% 
+#          summarise(n = n()) %>% 
+#          mutate(Prop_categ = n/sum(n)) %>% 
+#          dplyr::select(-n)
+# 
+# Prop_total <- full_join(Prop_by_Category, UNdata_Prop) %>% 
+#   pivot_longer(starts_with("Prop"), names_to = "Type", values_to = "Proportion") %>% 
+#   mutate(Type = ifelse(Type == "Prop_Studies", "Observed", "Expected"))
+# 
+# ggplot(Prop_total, aes(x = city_categ, y = Proportion)) + geom_col(aes(fill = Type), position = "dodge") + theme_classic()+ xlab("City category")+
+#   scale_fill_brewer(palette="Dark2", name=" ") +theme(text=element_text(size=18,  family="Arial"))
 
 
-
-
-
-
-
-
+```
 
 
 
  
-```{r, echo=FALSE, fig.cap= "Fig 3. Population distribution of studied cities in coastal urban ecology research, for each studied country.", fig.width=8}
-
-#obtenido del codigo en el script: ggmaps FEE.R
-
-library(ggplot2)
-
-data("countriesHigh")
-DF <- st_as_sf(countriesHigh)  %>% dplyr::filter(ADMIN != "Antarctica")
-DF_by_citySF <- read_rds("DF_by_citySF.rds") 
-
-DF_by_citySF <- DF_by_citySF %>% 
-  mutate(city_categ=case_when(pop <100000~"Non-urban areas", pop >=100000 & pop <500000~"Small cities", pop >=500000 & pop <1000000~"Medium cities" , pop >=1000000 & pop <5000000~"Large cities" , pop >=5000000 & pop <10000000~"Very large cities" , pop >=10000000~"Megacities" )) %>% 
-  mutate(city_categ=fct_relevel(city_categ, "Non-urban areas", "Small cities", "Medium cities", "Large cities", "Very large cities", "Megacities" ))
-
-ggplot()+ geom_sf(data=DF,  size=0.2, color="#585858", fill="#666666") +theme_bw() + 
-  geom_sf(data=DF_by_citySF, aes(size=N, fill=city_categ), color="black", shape=21, show.legend = "point") +  
-  scale_fill_manual(name="City size", values = c("#1a9850", "#91cf60", "#d9ef8b", "#fee08b", "#fc8d59", "#d73027")) + 
-  theme(legend.position = "bottom")+ scale_size(name="Number of articles")
-
-
-
-###probando tendencias de megacities y large cities:
-
-
-
-```
 
 
 
 
 
-```{r, echo=FALSE, fig.cap= "Fig 3. Population distribution of studied cities in coastal urban ecology research, for each studied country.", fig.width=8}
+```{r, echo=FALSE, fig.width=8}
 
 #obtenido del codigo en el script: ggmaps FEE.R
 
@@ -210,6 +174,12 @@ ggplot()+ geom_sf(data=DF,  size=0.2, color="#585858", fill="#848484") +theme_bw
   scale_fill_manual(name="City size", values = c("#1a9850", "#91cf60", "#d9ef8b", "#fee08b", "#fc8d59", "#d73027")) + 
   theme(legend.position = "bottom")+ scale_size(name="Number of articles")
 
+
+#tiff("Fig.tiff", res = 500, width = 190, units =  "mm")
+
+#print(g)
+
+#dev.off()
 
 
 ###probando tendencias de megacities y large cities:
